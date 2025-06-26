@@ -25,8 +25,8 @@ const ElevationMesh = ({ elevationData, hoveredPoint, setHoveredPoint }) => {
         const colors = [];
         const indices = [];
         
-        // Scale factors
-        const xScale = 20; // Scale for distance
+        // Scale factors - doubled width for less bunched up appearance
+        const xScale = 40; // Scale for distance (doubled from 20)
         const yScale = 0.02; // Scale for elevation
         const zDepth = 2; // Depth of the 3D profile
         
@@ -111,7 +111,7 @@ const ElevationMesh = ({ elevationData, hoveredPoint, setHoveredPoint }) => {
         
         if (intersects.length > 0) {
             const point = intersects[0].point;
-            const normalizedX = (point.x + 10) / 20; // Normalize back to 0-1
+            const normalizedX = (point.x + 20) / 40; // Normalize back to 0-1 (updated for new scale)
             const distance = normalizedX * maxDistance;
             
             // Find closest data point
@@ -140,14 +140,19 @@ const ElevationMesh = ({ elevationData, hoveredPoint, setHoveredPoint }) => {
     return (
         <group>
             {/* Main elevation mesh */}
-            <mesh ref={meshRef} geometry={geometry}>
-                <meshLambertMaterial vertexColors side={THREE.DoubleSide} />
+            <mesh ref={meshRef} geometry={geometry} castShadow receiveShadow>
+                <meshPhongMaterial 
+                    vertexColors 
+                    side={THREE.DoubleSide}
+                    shininess={30}
+                    specular={0x111111}
+                />
             </mesh>
             
             {/* Distance markers */}
             {Array.from({ length: Math.ceil(maxDistance / 5) }, (_, i) => {
                 const km = i * 5;
-                const x = (km / maxDistance) * 20 - 10;
+                const x = (km / maxDistance) * 40 - 20;
                 return (
                     <group key={km}>
                         <mesh position={[x, -0.5, 0]}>
@@ -174,7 +179,7 @@ const ElevationMesh = ({ elevationData, hoveredPoint, setHoveredPoint }) => {
                 return (
                     <Text
                         key={elevation}
-                        position={[-11, y, 0]}
+                        position={[-22, y, 0]}
                         fontSize={0.25}
                         color="#666666"
                         anchorX="center"
@@ -187,7 +192,7 @@ const ElevationMesh = ({ elevationData, hoveredPoint, setHoveredPoint }) => {
             
             {/* Climb markers */}
             {climbs.map((climb, index) => {
-                const x = ((climb.startDistance + climb.endDistance) / 2 / maxDistance) * 20 - 10;
+                const x = ((climb.startDistance + climb.endDistance) / 2 / maxDistance) * 40 - 20;
                 const y = (climb.maxElevation / maxElevation) * 10 + 1;
                 const category = getClimbCategory(climb.elevationGain, climb.distance);
                 
@@ -232,8 +237,8 @@ const CameraController = ({ zoomLevel, setZoomLevel }) => {
     const { camera } = useThree();
     
     useEffect(() => {
-        camera.position.set(0, 8, 15);
-        camera.lookAt(0, 2, 0);
+        camera.position.set(0, 12, 25);
+        camera.lookAt(0, 3, 0);
     }, [camera]);
     
     return null;
@@ -255,8 +260,15 @@ const ThreeDTourProfile = ({ elevationData }) => {
     return (
         <div className="position-relative" style={{ height: '600px', width: '100%' }}>
             <Canvas
-                camera={{ position: [0, 8, 15], fov: 60 }}
+                camera={{ position: [0, 12, 25], fov: 60 }}
                 style={{ background: 'linear-gradient(to bottom, #87CEEB, #f8f9fa)' }}
+                gl={{ 
+                    antialias: true, 
+                    alpha: true, 
+                    powerPreference: "high-performance",
+                    shadowMap: { enabled: true, type: THREE.PCFSoftShadowMap }
+                }}
+                dpr={[1, 2]}
             >
                 {/* Lighting */}
                 <ambientLight intensity={0.6} />
@@ -273,8 +285,8 @@ const ThreeDTourProfile = ({ elevationData }) => {
                     enablePan={true}
                     enableZoom={true}
                     enableRotate={true}
-                    minDistance={5}
-                    maxDistance={30}
+                    minDistance={8}
+                    maxDistance={60}
                     maxPolarAngle={Math.PI / 2}
                     minPolarAngle={0}
                 />

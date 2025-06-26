@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import InteractiveTourProfile from './InteractiveTourProfile';
+import ThreeDTourProfile from './ThreeDTourProfile';
 
 function App() {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -10,7 +11,7 @@ function App() {
     const [elevationData, setElevationData] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [viewMode, setViewMode] = useState('static'); // 'static' or 'interactive'
+    const [viewMode, setViewMode] = useState('static'); // 'static', 'interactive', or '3d'
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
@@ -273,6 +274,14 @@ function App() {
                                             <i className="fas fa-mouse-pointer me-1"></i>
                                             Interactive View
                                         </button>
+                                        <button 
+                                            type="button" 
+                                            className={`btn ${viewMode === '3d' ? 'btn-dark' : 'btn-outline-dark'} btn-sm`}
+                                            onClick={() => setViewMode('3d')}
+                                        >
+                                            <i className="fas fa-cube me-1"></i>
+                                            3D View
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="card-body p-0">
@@ -283,9 +292,13 @@ function App() {
                                             className="img-fluid w-100"
                                             style={{ maxHeight: '600px', objectFit: 'contain' }}
                                         />
-                                    ) : (
+                                    ) : viewMode === 'interactive' ? (
                                         <div className="p-3">
                                             <InteractiveTourProfile elevationData={elevationData} />
+                                        </div>
+                                    ) : (
+                                        <div className="p-0">
+                                            <ThreeDTourProfile elevationData={elevationData} />
                                         </div>
                                     )}
                                 </div>
@@ -317,6 +330,14 @@ function App() {
                                             <small className="text-info">
                                                 <i className="fas fa-info-circle me-1"></i>
                                                 <strong>Interactive Features:</strong> Hover for details • Mountain symbols show climb categories • Zoom coming soon
+                                            </small>
+                                        </div>
+                                    )}
+                                    {viewMode === '3d' && (
+                                        <div className="text-center mt-2">
+                                            <small className="text-info">
+                                                <i className="fas fa-info-circle me-1"></i>
+                                                <strong>3D Features:</strong> Drag to rotate • Mouse wheel to zoom • Right-click to pan • Hover for details
                                             </small>
                                         </div>
                                     )}

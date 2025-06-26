@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import InteractiveTourProfile from './InteractiveTourProfile';
 
 function App() {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -9,6 +10,7 @@ function App() {
     const [elevationData, setElevationData] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [viewMode, setViewMode] = useState('static'); // 'static' or 'interactive'
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
@@ -247,21 +249,45 @@ function App() {
                                 </div>
                             </div>
 
-                            {/* Elevation Profile */}
-                            <div className="card shadow">
-                                <div className="card-header bg-warning text-dark">
+                            {/* Elevation Profile with Toggle */}
+                            <div className="card shadow mb-4">
+                                <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                                     <h5 className="mb-0">
                                         <i className="fas fa-chart-area me-2"></i>
                                         Tour de France Style Elevation Profile
                                     </h5>
+                                    <div className="btn-group" role="group">
+                                        <button 
+                                            type="button" 
+                                            className={`btn ${viewMode === 'static' ? 'btn-dark' : 'btn-outline-dark'} btn-sm`}
+                                            onClick={() => setViewMode('static')}
+                                        >
+                                            <i className="fas fa-image me-1"></i>
+                                            Static View
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            className={`btn ${viewMode === 'interactive' ? 'btn-dark' : 'btn-outline-dark'} btn-sm`}
+                                            onClick={() => setViewMode('interactive')}
+                                        >
+                                            <i className="fas fa-mouse-pointer me-1"></i>
+                                            Interactive View
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="card-body p-0">
-                                    <img 
-                                        src={elevationData.elevation_profile_image} 
-                                        alt="Elevation Profile" 
-                                        className="img-fluid w-100"
-                                        style={{ maxHeight: '600px', objectFit: 'contain' }}
-                                    />
+                                    {viewMode === 'static' ? (
+                                        <img 
+                                            src={elevationData.elevation_profile_image} 
+                                            alt="Elevation Profile" 
+                                            className="img-fluid w-100"
+                                            style={{ maxHeight: '600px', objectFit: 'contain' }}
+                                        />
+                                    ) : (
+                                        <div className="p-3">
+                                            <InteractiveTourProfile elevationData={elevationData} />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="card-footer text-muted">
                                     <div className="row">
@@ -286,6 +312,14 @@ function App() {
                                             </span>
                                         </div>
                                     </div>
+                                    {viewMode === 'interactive' && (
+                                        <div className="text-center mt-2">
+                                            <small className="text-info">
+                                                <i className="fas fa-info-circle me-1"></i>
+                                                <strong>Interactive Features:</strong> Hover for details • Mountain symbols show climb categories • Zoom coming soon
+                                            </small>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </>
